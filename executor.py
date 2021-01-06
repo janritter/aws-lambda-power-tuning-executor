@@ -3,6 +3,7 @@ import boto3
 import time
 import progressbar
 import json
+import datetime
 
 
 def getStateMachineArnByStackName(stackName):
@@ -54,8 +55,17 @@ def checkExecutionStatus(executionARN):
         else:
             bar.finish()
             print("\n----------\nStatus:", status)
+
+            outputJson = json.loads(response['output'])
+
             print("Execution output:")
-            print(json.dumps(json.loads(response['output']), indent=4))
+            print(json.dumps(outputJson, indent=4))
+
+            resultFilename = "result"+datetime.datetime.today().strftime('%d-%m-%y-%I-%M-%S')+".json"
+            with open(resultFilename, "w") as outfile:
+                json.dump(outputJson, outfile)
+            print("Saved result in",resultFilename)
+
             break
 
 def main():
