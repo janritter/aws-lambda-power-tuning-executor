@@ -11,23 +11,22 @@ def getStateMachineArnByStackName(stackName):
 
     response = client.describe_stacks(StackName=stackName)
 
-    outputs = response['Stacks'][0]['Outputs']
+    outputs = response["Stacks"][0]["Outputs"]
     for output in outputs:
         if output["OutputKey"] == "StateMachineARN":
             return output["OutputValue"]
 
+
 def startStepFunctionsExecution(stateMachineARN, input):
     client = boto3.client("stepfunctions")
 
-    response = client.start_execution(
-        stateMachineArn=stateMachineARN,
-        input=input
-    )
+    response = client.start_execution(stateMachineArn=stateMachineARN, input=input)
 
-    executionARN = response['executionArn']
-    print("Execution started with ARN:",executionARN)
+    executionARN = response["executionArn"]
+    print("Execution started with ARN:", executionARN)
 
     return executionARN
+
 
 def checkExecutionStatus(executionARN):
     client = boto3.client("stepfunctions")
@@ -36,37 +35,42 @@ def checkExecutionStatus(executionARN):
     runningChecks = 0
 
     while True:
-        response = client.describe_execution(
-            executionArn=executionARN
-        )
+        response = client.describe_execution(executionArn=executionARN)
 
-        status = response['status']
-        
-        if (status == "RUNNING"):
+        status = response["status"]
+
+        if status == "RUNNING":
             runningChecks = runningChecks + 1
             bar.update(runningChecks)
             time.sleep(0.5)
 
-        elif (status == "FAILED"):
+        elif status == "FAILED":
             bar.finish()
-            print("The execution failed, check the Step Functions console for more information")
+            print(
+                "The execution failed, check the Step Functions console for more information"
+            )
             break
 
         else:
             bar.finish()
             print("\n----------\nStatus:", status)
 
-            outputJson = json.loads(response['output'])
+            outputJson = json.loads(response["output"])
 
             print("Execution output:")
             print(json.dumps(outputJson, indent=4))
 
-            resultFilename = "result"+datetime.datetime.today().strftime('%d-%m-%y-%I-%M-%S')+".json"
+            resultFilename = (
+                "result"
+                + datetime.datetime.today().strftime("%d-%m-%y-%I-%M-%S")
+                + ".json"
+            )
             with open(resultFilename, "w") as outfile:
                 json.dump(outputJson, outfile)
-            print("Saved result in",resultFilename)
+            print("Saved result in", resultFilename)
 
             break
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -92,11 +96,12 @@ def main():
     stateMachineARN = getStateMachineArnByStackName(args.stack_name)
     print("Step Functions state machine ARN:", stateMachineARN)
 
-    print("\n----------\nLoading config from: "+args.config)
-    configContent = open(args.config, 'r').read()
+    print("\n----------\nLoading config from: " + args.config)
+    configContent = open(args.config, "r").read()
 
     executionARN = startStepFunctionsExecution(stateMachineARN, configContent)
     checkExecutionStatus(executionARN)
+
 
 if __name__ == "__main__":
     main()
