@@ -1,1 +1,2 @@
 boto3==1.16.48
+progressbar2==3.53.1
