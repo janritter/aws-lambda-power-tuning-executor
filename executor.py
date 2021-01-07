@@ -1,7 +1,7 @@
 import argparse
 import boto3
 import time
-import progressbar
+from alive_progress import alive_bar
 import json
 import datetime
 
@@ -31,45 +31,42 @@ def startStepFunctionsExecution(stateMachineARN, input):
 def checkExecutionStatus(executionARN):
     client = boto3.client("stepfunctions")
 
-    bar = progressbar.ProgressBar(max_value=progressbar.UnknownLength)
     runningChecks = 0
+    with alive_bar() as bar:
+        while True:
+            response = client.describe_execution(executionArn=executionARN)
 
-    while True:
-        response = client.describe_execution(executionArn=executionARN)
+            status = response["status"]
 
-        status = response["status"]
+            if status == "RUNNING":
+                runningChecks = runningChecks + 1
+                bar()
+                time.sleep(0.5)
 
-        if status == "RUNNING":
-            runningChecks = runningChecks + 1
-            bar.update(runningChecks)
-            time.sleep(0.5)
+            elif status == "FAILED":
+                print(
+                    "The execution failed, check the Step Functions console for more information"
+                )
+                break
 
-        elif status == "FAILED":
-            bar.finish()
-            print(
-                "The execution failed, check the Step Functions console for more information"
-            )
-            break
+            else:
+                print("Status:", status)
 
-        else:
-            bar.finish()
-            print("\n----------\nStatus:", status)
+                outputJson = json.loads(response["output"])
 
-            outputJson = json.loads(response["output"])
+                print("Execution output:")
+                print(json.dumps(outputJson, indent=4))
 
-            print("Execution output:")
-            print(json.dumps(outputJson, indent=4))
+                resultFilename = (
+                    "result"
+                    + datetime.datetime.today().strftime("%d-%m-%y-%I-%M-%S")
+                    + ".json"
+                )
+                with open(resultFilename, "w") as outfile:
+                    json.dump(outputJson, outfile)
+                print("Saved result in", resultFilename)
 
-            resultFilename = (
-                "result"
-                + datetime.datetime.today().strftime("%d-%m-%y-%I-%M-%S")
-                + ".json"
-            )
-            with open(resultFilename, "w") as outfile:
-                json.dump(outputJson, outfile)
-            print("Saved result in", resultFilename)
-
-            break
+                break
 
 
 def main():

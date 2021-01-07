@@ -1,2 +1,2 @@
 boto3==1.16.48
-progressbar2==3.53.1
+alive-progress==1.6.1
