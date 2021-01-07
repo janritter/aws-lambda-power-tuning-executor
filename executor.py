@@ -31,7 +31,6 @@ def startStepFunctionsExecution(stateMachineARN, input):
 def checkExecutionStatus(executionARN):
     client = boto3.client("stepfunctions")
 
-    runningChecks = 0
     with alive_bar() as bar:
         while True:
             response = client.describe_execution(executionArn=executionARN)
@@ -39,7 +38,6 @@ def checkExecutionStatus(executionARN):
             status = response["status"]
 
             if status == "RUNNING":
-                runningChecks = runningChecks + 1
                 bar()
                 time.sleep(0.5)
 
