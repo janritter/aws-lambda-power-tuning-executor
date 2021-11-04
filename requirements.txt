@@ -1,2 +1,2 @@
-boto3==1.16.48
-alive-progress==1.6.1
+boto3==1.19.11
+alive-progress==1.6.2
