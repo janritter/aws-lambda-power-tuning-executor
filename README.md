@@ -1,4 +1,6 @@
-# AWS Lambda power tuning executor
+# AWS Lambda Power Tuning Executor
+
+> Script to easily execute the [AWS Lamba Power Tuning state machine](https://github.com/alexcasalboni/aws-lambda-power-tuning) with different config files
 
 ## Prerequisites
 
@@ -30,3 +32,5 @@ pip3 install -r requirements.txt
 ```bash
 python3 executor.py --stack-name serverlessrepo-lambda-power-tuner --config my-test.json
 ```
+
+A documentation for the input configuration can be found [here](https://github.com/alexcasalboni/aws-lambda-power-tuning/blob/master/README-INPUT-OUTPUT.md#user-content-state-machine-input)
