@@ -1,2 +1,2 @@
-boto3==1.19.11
+boto3==1.28.67
 alive-progress==1.6.2
